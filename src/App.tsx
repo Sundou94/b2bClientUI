@@ -9,7 +9,9 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 3000,
+      staleTime: Infinity,       // 자동 stale 처리 비활성화
+      refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 갱신 비활성화
+      refetchOnMount: false,       // 마운트 시 자동 갱신 비활성화
     },
   },
 })
