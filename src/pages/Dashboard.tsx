@@ -92,25 +92,29 @@ export default function Dashboard() {
         </Text>
       ),
     },
-    {
-      title: t('errorCount'),
-      dataIndex: 'errorCount',
-      width: 72,
-      align: 'center',
-      render: (v: number) =>
-        v > 0 ? <Tag color="red" style={{ fontSize: 11 }}>{v}</Tag> : <Text type="secondary" style={{ fontSize: 11 }}>0</Text>,
-    },
     ...(direction === 'send'
-      ? [{
-          title: t('pendingCount'),
-          dataIndex: 'pendingCount' as keyof IFTableSummary,
-          width: 72,
-          align: 'center' as const,
-          render: (v: unknown) =>
-            (v as number) > 0
-              ? <Tag color="orange" style={{ fontSize: 11 }}>{v as number}</Tag>
-              : <Text type="secondary" style={{ fontSize: 11 }}>0</Text>,
-        }]
+      ? [
+          {
+            title: t('errorCount'),
+            dataIndex: 'errorCount' as keyof IFTableSummary,
+            width: 72,
+            align: 'center' as const,
+            render: (v: unknown) =>
+              (v as number) > 0
+                ? <Tag color="red" style={{ fontSize: 11 }}>{v as number}</Tag>
+                : <Text type="secondary" style={{ fontSize: 11 }}>0</Text>,
+          },
+          {
+            title: t('pendingCount'),
+            dataIndex: 'pendingCount' as keyof IFTableSummary,
+            width: 72,
+            align: 'center' as const,
+            render: (v: unknown) =>
+              (v as number) > 0
+                ? <Tag color="orange" style={{ fontSize: 11 }}>{v as number}</Tag>
+                : <Text type="secondary" style={{ fontSize: 11 }}>0</Text>,
+          },
+        ]
       : []),
   ]
 
