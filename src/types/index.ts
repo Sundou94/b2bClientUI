@@ -7,6 +7,13 @@ export interface ClientStatus {
   totalErrorCount: number
 }
 
+export interface IFTableItem {
+  fieldName: string
+  tableName: string
+  type: string
+  enabled: boolean
+}
+
 export interface IFTableSummary {
   tableName: string
   lastSyncTime: string | null

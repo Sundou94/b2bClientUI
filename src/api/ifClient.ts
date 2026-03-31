@@ -1,6 +1,7 @@
 import apiClient from './client'
 import type {
   ClientStatus,
+  IFTableItem,
   IFTableSummary,
   SendRow,
   FetchRow,
@@ -18,7 +19,7 @@ export const ifClientApi = {
     apiClient.get<IFTableSummary[]>('/send/summary').then((r) => r.data),
 
   getSendTables: () =>
-    apiClient.get<string[]>('/send/tables').then((r) => r.data),
+    apiClient.get<IFTableItem[]>('/send/tables').then((r) => r.data),
 
   getSendErrors: (tableName: string) =>
     apiClient
@@ -33,7 +34,7 @@ export const ifClientApi = {
     apiClient.get<IFTableSummary[]>('/fetch/summary').then((r) => r.data),
 
   getFetchTables: () =>
-    apiClient.get<string[]>('/fetch/tables').then((r) => r.data),
+    apiClient.get<IFTableItem[]>('/fetch/tables').then((r) => r.data),
 
   getFetchData: (tableName: string, from: string, to: string) =>
     apiClient

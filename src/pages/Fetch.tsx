@@ -70,7 +70,7 @@ export default function Fetch() {
             placeholder={t('selectTable')}
             value={selectedTable || undefined}
             onChange={setSelectedTable}
-            options={(tables ?? []).map((tbl) => ({ label: tbl, value: tbl }))}
+            options={(tables ?? []).map((tbl) => ({ label: tbl.tableName, value: tbl.tableName }))}
             style={{ width: 200 }}
             showSearch
             allowClear
