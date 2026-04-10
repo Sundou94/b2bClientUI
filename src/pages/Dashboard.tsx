@@ -79,7 +79,10 @@ export default function Dashboard() {
 
   const { data: status, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useClientStatus(autoRefresh)
   const { data: lotData, isLoading: lotLoading, refetch: refetchLot } = useLotHisIf(autoRefresh)
-  const retransmit = useRetransmit()
+  const retransmit = useRetransmit(() => {
+    setSelectedIds([])
+    gridApi?.deselectAll()
+  })
 
   useEffect(() => {
     if (!lotData) return

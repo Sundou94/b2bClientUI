@@ -20,7 +20,7 @@ export const useLotHisIf = (autoRefresh: boolean, intervalMs = 5000) =>
     placeholderData: (prev) => prev,
   })
 
-export const useRetransmit = () => {
+export const useRetransmit = (onSuccess?: () => void) => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (req: RetransmitRequest) => ifClientApi.retransmit(req),
@@ -28,6 +28,7 @@ export const useRetransmit = () => {
       message.success(`재전송 완료 — 성공: ${result.successCount}건 / 실패: ${result.failCount}건`)
       queryClient.invalidateQueries({ queryKey: ['lot-his-if'] })
       queryClient.invalidateQueries({ queryKey: ['client'] })
+      onSuccess?.()
     },
     onError: () => message.error('재전송 요청에 실패했습니다.'),
   })
