@@ -143,37 +143,10 @@ html, body, #root {
   justify-content: center;
 }
 
-.ag-theme-quartz,
-.ag-theme-quartz-dark {
-  font-size: var(--font-md) !important;
+.ag-root-wrapper {
+  font-size: var(--font-sm) !important;
 }
 
-.ag-theme-quartz .ag-cell,
-.ag-theme-quartz-dark .ag-cell {
-  font-size: var(--font-sm);
+.ag-cell {
   line-height: 1.4;
-}
-
-/* 선택 row 파란색 하이라이트 */
-.ag-theme-quartz .ag-row-selected,
-.ag-theme-quartz .ag-row-selected:hover {
-  background-color: #e6f4ff !important;
-}
-.ag-theme-quartz-dark .ag-row-selected,
-.ag-theme-quartz-dark .ag-row-selected:hover {
-  background-color: rgba(24, 144, 255, 0.2) !important;
-}
-
-/* ─── AG Grid 다크모드 색상 보정 ────────────────────── */
-.ag-theme-quartz-dark {
-  --ag-background-color: #1f1f1f;
-  --ag-header-background-color: #141414;
-  --ag-odd-row-background-color: #1f1f1f;
-  --ag-row-hover-color: rgba(255, 255, 255, 0.05);
-  --ag-border-color: rgba(255, 255, 255, 0.12);
-  --ag-header-column-separator-color: rgba(255, 255, 255, 0.12);
-  --ag-foreground-color: rgba(255, 255, 255, 0.85);
-  --ag-secondary-foreground-color: rgba(255, 255, 255, 0.45);
-  --ag-input-focus-border-color: #1677ff;
-  --ag-selected-row-background-color: rgba(24, 144, 255, 0.2);
 }
