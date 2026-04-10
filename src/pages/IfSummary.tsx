@@ -62,11 +62,11 @@ export default function IfSummary() {
 
   return (
     <div className="page">
-      <Row gutter={[16, 0]} style={{ flex: 1, minHeight: 0 }}>
-        <Col span={12} style={{ height: '100%' }}>
+      <Row gutter={[16, 0]} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <Col span={12} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {gridCard(t('ifStatusSend'), sendRows)}
         </Col>
-        <Col span={12} style={{ height: '100%' }}>
+        <Col span={12} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {gridCard(t('ifStatusFetch'), fetchRows)}
         </Col>
       </Row>
