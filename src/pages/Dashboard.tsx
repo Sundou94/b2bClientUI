@@ -11,13 +11,15 @@ import {
   Typography,
   Spin,
   DatePicker,
+  Popconfirm,
 } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { ReloadOutlined, SendOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { type Dayjs } from 'dayjs'
 import {
   useClientStatus,
   useLotHisIf,
+  useRetransmit,
 } from '../hooks/useIFClient'
 import { useAppContext } from '../context/AppContext'
 import type { LotHisIfRow } from '../types'
@@ -25,7 +27,6 @@ import type { LotHisIfRow } from '../types'
 const { Text } = Typography
 const { RangePicker } = DatePicker
 
-// 카드 내부 로딩 오버레이
 function CardSpin({ loading, children }: { loading: boolean; children: React.ReactNode }) {
   return (
     <Spin spinning={loading} size="default" style={{ maxHeight: '100%' }}>
@@ -86,21 +87,34 @@ export default function Dashboard() {
     dayjs().startOf('day'),
     dayjs().endOf('day'),
   ])
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
 
   const from = dateRange[0].toISOString()
   const to = dateRange[1].toISOString()
 
   const { data: status, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useClientStatus(autoRefresh)
   const { data: lotData, isLoading: lotLoading, refetch: refetchLot } = useLotHisIf(from, to, autoRefresh)
+  const retransmit = useRetransmit()
 
   useEffect(() => {
-    if (lotData) setLastQueried(new Date())
+    if (lotData) {
+      setLastQueried(new Date())
+      // 데이터 갱신 시 더 이상 ERROR가 아닌 row의 선택 해제
+      setSelectedRowKeys((prev) => {
+        const errorIds = new Set((lotData ?? []).filter((r) => r.status === 'ERROR').map((r) => r.id))
+        return prev.filter((k) => errorIds.has(k as string))
+      })
+    }
   }, [lotData])
 
   const handleRefresh = () => {
     refetchStatus()
     refetchLot()
     setLastQueried(new Date())
+  }
+
+  const handleRetransmit = () => {
+    retransmit.mutate({ ids: selectedRowKeys as string[] })
   }
 
   const displayStatus = statusError ? 'STOP' : (status?.status ?? 'STOP')
@@ -116,6 +130,22 @@ export default function Dashboard() {
         >
           {autoRefresh ? t('autoOn') : t('autoOff')}
         </Button>
+        <Popconfirm
+          title={`선택한 ${selectedRowKeys.length}건을 재전송하시겠습니까?`}
+          onConfirm={handleRetransmit}
+          disabled={selectedRowKeys.length === 0}
+          okText="확인"
+          cancelText="취소"
+        >
+          <Button
+            icon={<SendOutlined />}
+            danger
+            disabled={selectedRowKeys.length === 0}
+            loading={retransmit.isPending}
+          >
+            {t('retransmit')}{selectedRowKeys.length > 0 ? ` (${selectedRowKeys.length})` : ''}
+          </Button>
+        </Popconfirm>
       </div>
 
       {/* ── 상태 카드 ── */}
@@ -183,10 +213,15 @@ export default function Dashboard() {
           columns={lotHisIfColumns}
           rowKey="id"
           loading={lotLoading}
-          pagination={{ pageSize: 50, showSizeChanger: true, showTotal: (t) => `총 ${t}건` }}
+          pagination={{ pageSize: 50, showSizeChanger: true, showTotal: (total) => `총 ${total}건` }}
           size="small"
           scroll={{ y: 'calc(100vh - 360px)' }}
           rowClassName={(r) => (r.status === 'ERROR' ? 'row-error' : '')}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: setSelectedRowKeys,
+            getCheckboxProps: (r) => ({ disabled: r.status !== 'ERROR' }),
+          }}
         />
       </Card>
     </div>
