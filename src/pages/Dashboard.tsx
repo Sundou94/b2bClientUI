@@ -21,6 +21,15 @@ function CardSpin({ loading, children }: { loading: boolean; children: React.Rea
   )
 }
 
+function formatUptime(seconds: number): string {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (h > 0) return `${h}h ${m}m ${s}s`
+  if (m > 0) return `${m}m ${s}s`
+  return `${s}s`
+}
+
 const colDefs: ColDef<LotHisIfRow>[] = [
   {
     headerName: 'LOT ID',
@@ -91,6 +100,11 @@ export default function Dashboard() {
       valueStyle: { fontSize: 'var(--font-lg)' },
     },
     {
+      title: t('uptime'),
+      value: status ? formatUptime(status.uptimeSeconds) : '-',
+      valueStyle: { fontSize: 'var(--font-lg)' },
+    },
+    {
       title: t('totalErrors'),
       value: status?.totalErrorCount ?? 0,
       valueStyle: { color: (status?.totalErrorCount ?? 0) > 0 ? 'var(--color-error)' : 'var(--color-success)' },
@@ -121,7 +135,7 @@ export default function Dashboard() {
 
       <Row gutter={[16, 0]} className="status-card-row">
         {statusCards.map((card, i) => (
-          <Col span={8} key={i}>
+          <Col span={6} key={i}>
             <Card size="small" className="status-card">
               <CardSpin loading={statusLoading}>
                 <Statistic title={card.title} value={card.value} valueStyle={card.valueStyle} />
@@ -153,7 +167,8 @@ export default function Dashboard() {
             mode: 'multiRow',
             checkboxes: true,
             isRowSelectable: (p) => p.data?.status === 'ERROR',
-            enableClickSelection: false,
+            // 행 클릭으로 선택 (ERROR row만 선택 가능)
+            enableClickSelection: 'enableDeselection',
           }}
           getRowId={(p) => p.data.id}
           onSelectionChanged={(e: SelectionChangedEvent<LotHisIfRow>) => {

@@ -121,7 +121,7 @@ html, body, #root {
 .grid-card .ant-card-body {
   flex: 1;
   min-height: 0;
-  padding: var(--spacing-sm) 0 0 !important;
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md) !important;
   overflow: hidden;
   display: flex;
   flex-direction: column;

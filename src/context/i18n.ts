@@ -9,6 +9,7 @@ const dict: Record<string, Record<Lang, string>> = {
   retransmit:      { ko: '재전송',             en: 'Retransmit' },
   clientStatus:    { ko: 'Client 상태',        en: 'Status' },
   startTime:       { ko: '시작 시간',           en: 'Start Time' },
+  uptime:          { ko: '실행 시간',           en: 'Uptime' },
   totalErrors:     { ko: '전체 오류',           en: 'Total Errors' },
   ifStatusSend:    { ko: 'I/F 현황 — SEND',   en: 'I/F Status — SEND' },
   ifStatusFetch:   { ko: 'I/F 현황 — FETCH',  en: 'I/F Status — FETCH' },
