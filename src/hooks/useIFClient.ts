@@ -23,13 +23,10 @@ export const useLotHisIf = (from: string, to: string, autoRefresh: boolean, inte
 
 export const useRetransmit = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: (req: RetransmitRequest) => ifClientApi.retransmit(req),
     onSuccess: (result) => {
-      message.success(
-        `재전송 완료 — 성공: ${result.successCount}건 / 실패: ${result.failCount}건`,
-      )
+      message.success(`재전송 완료 — 성공: ${result.successCount}건 / 실패: ${result.failCount}건`)
       queryClient.invalidateQueries({ queryKey: ['lot-his-if'] })
       queryClient.invalidateQueries({ queryKey: ['client'] })
     },
@@ -37,7 +34,6 @@ export const useRetransmit = () => {
   })
 }
 
-// SSE — Job End 이벤트 수신
 export function useJobEventSSE(sseUrl = '/api/sse/job-events') {
   const [sendMap, setSendMap] = useState<Record<string, SseSummaryRow>>({})
   const [fetchMap, setFetchMap] = useState<Record<string, SseSummaryRow>>({})
@@ -45,7 +41,6 @@ export function useJobEventSSE(sseUrl = '/api/sse/job-events') {
 
   useEffect(() => {
     const es = new EventSource(sseUrl)
-
     es.onopen = () => setConnected(true)
 
     const handleEvent = (e: MessageEvent) => {
@@ -55,32 +50,16 @@ export function useJobEventSSE(sseUrl = '/api/sse/job-events') {
       } catch {
         return
       }
-
-      const row: SseSummaryRow = {
-        tableName: event.tableName,
-        lastJobTime: event.timestamp,
-        successCount: event.count,
-      }
-
-      if (event.direction === 'SEND') {
-        setSendMap((prev) => ({ ...prev, [event.tableName]: row }))
-      } else {
-        setFetchMap((prev) => ({ ...prev, [event.tableName]: row }))
-      }
+      const row: SseSummaryRow = { tableName: event.tableName, lastJobTime: event.timestamp, successCount: event.count }
+      const setter = event.direction === 'SEND' ? setSendMap : setFetchMap
+      setter((prev) => ({ ...prev, [event.tableName]: row }))
     }
 
     es.addEventListener('job-end', handleEvent)
-    es.onmessage = handleEvent  // 이벤트 타입 미지정 시 fallback
+    es.onmessage = handleEvent  // 서버가 이벤트 타입을 생략할 경우 fallback
 
-    es.onerror = () => {
-      setConnected(false)
-      es.close()
-    }
-
-    return () => {
-      es.close()
-      setConnected(false)
-    }
+    es.onerror = () => { setConnected(false); es.close() }
+    return () => { es.close(); setConnected(false) }
   }, [sseUrl])
 
   return {
