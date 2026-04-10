@@ -12,8 +12,8 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [isDark, setIsDark] = useState(false)
-  const [lang, setLang] = useState<Lang>('ko')
+  const [isDark, setIsDark] = useState(true)
+  const [lang, setLang] = useState<Lang>('en')
 
   const t = (key: string) => translate(key, lang)
 
