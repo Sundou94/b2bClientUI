@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Card,
   Col,
@@ -10,31 +10,20 @@ import {
   Tag,
   Typography,
   Spin,
-  Popconfirm,
+  DatePicker,
 } from 'antd'
-import { ReloadOutlined, SendOutlined } from '@ant-design/icons'
+import { ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useNavigate } from 'react-router-dom'
-import dayjs from 'dayjs'
+import dayjs, { type Dayjs } from 'dayjs'
 import {
   useClientStatus,
-  useSendSummary,
-  useFetchSummary,
-  useRetransmit,
+  useLotHisIf,
 } from '../hooks/useIFClient'
 import { useAppContext } from '../context/AppContext'
-import type { IFTableSummary } from '../types'
+import type { LotHisIfRow } from '../types'
 
 const { Text } = Typography
-
-function formatUptime(seconds: number): string {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-const GRID_HEIGHT = 'calc(100vh - 280px)'
+const { RangePicker } = DatePicker
 
 // 카드 내부 로딩 오버레이
 function CardSpin({ loading, children }: { loading: boolean; children: React.ReactNode }) {
@@ -45,84 +34,80 @@ function CardSpin({ loading, children }: { loading: boolean; children: React.Rea
   )
 }
 
+const lotHisIfColumns: ColumnsType<LotHisIfRow> = [
+  {
+    title: 'LOT ID',
+    dataIndex: 'lotId',
+    width: 160,
+    render: (v) => <Text strong style={{ fontSize: 12 }}>{v}</Text>,
+    ellipsis: true,
+  },
+  {
+    title: '상태',
+    dataIndex: 'status',
+    width: 90,
+    align: 'center',
+    render: (v: LotHisIfRow['status']) => {
+      const colorMap = { SUCCESS: 'green', ERROR: 'red', PENDING: 'orange' } as const
+      return <Tag color={colorMap[v]} style={{ fontSize: 11 }}>{v}</Tag>
+    },
+  },
+  {
+    title: '처리일시',
+    dataIndex: 'processedAt',
+    width: 140,
+    render: (v) => (
+      <Text style={{ fontSize: 11 }}>{v ? dayjs(v).format('MM-DD HH:mm:ss') : '-'}</Text>
+    ),
+  },
+  {
+    title: '등록일시',
+    dataIndex: 'createdAt',
+    width: 140,
+    render: (v) => (
+      <Text style={{ fontSize: 11 }}>{v ? dayjs(v).format('MM-DD HH:mm:ss') : '-'}</Text>
+    ),
+  },
+  {
+    title: '오류메시지',
+    dataIndex: 'errorMessage',
+    render: (v) => (
+      <Text type="danger" style={{ fontSize: 11 }}>{v ?? '-'}</Text>
+    ),
+    ellipsis: true,
+  },
+]
+
 export default function Dashboard() {
-  const navigate = useNavigate()
   const { t } = useAppContext()
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [lastQueried, setLastQueried] = useState<Date | null>(null)
-  const [selectedSendTable, setSelectedSendTable] = useState<string | null>(null)
-  const [uptimeOffset, setUptimeOffset] = useState(0)
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
+    dayjs().startOf('day'),
+    dayjs().endOf('day'),
+  ])
 
-  const { data: status, isLoading: statusLoading, refetch: refetchStatus } = useClientStatus(autoRefresh)
-  const { data: sendSummary, isLoading: sendLoading, refetch: refetchSend } = useSendSummary(autoRefresh)
-  const { data: fetchSummary, isLoading: fetchLoading, refetch: refetchFetch } = useFetchSummary(autoRefresh)
-  const retransmit = useRetransmit()
+  const from = dateRange[0].toISOString()
+  const to = dateRange[1].toISOString()
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  useEffect(() => {
-    if (!status) return
-    setUptimeOffset(0)
-    intervalRef.current = setInterval(() => setUptimeOffset((p) => p + 1), 1000)
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [status?.startTime])
+  const { data: status, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useClientStatus(autoRefresh)
+  const { data: lotData, isLoading: lotLoading, refetch: refetchLot } = useLotHisIf(from, to, autoRefresh)
 
   useEffect(() => {
-    if (sendSummary || fetchSummary) setLastQueried(new Date())
-  }, [sendSummary, fetchSummary])
+    if (lotData) setLastQueried(new Date())
+  }, [lotData])
 
   const handleRefresh = () => {
-    refetchStatus(); refetchSend(); refetchFetch()
+    refetchStatus()
+    refetchLot()
     setLastQueried(new Date())
   }
 
-  const summaryColumns = (direction: 'send' | 'fetch'): ColumnsType<IFTableSummary> => [
-    {
-      title: t('tableName'),
-      dataIndex: 'tableName',
-      render: (v) => <Text strong style={{ fontSize: 12 }}>{v}</Text>,
-      ellipsis: true,
-    },
-    {
-      title: t('lastSyncTime'),
-      dataIndex: 'lastSyncTime',
-      width: 130,
-      render: (v) => (
-        <Text style={{ fontSize: 11 }}>
-          {v ? dayjs(v).format('MM-DD HH:mm:ss') : '-'}
-        </Text>
-      ),
-    },
-    ...(direction === 'send'
-      ? [
-          {
-            title: t('errorCount'),
-            dataIndex: 'errorCount' as keyof IFTableSummary,
-            width: 72,
-            align: 'center' as const,
-            render: (v: unknown) =>
-              (v as number) > 0
-                ? <Tag color="red" style={{ fontSize: 11 }}>{v as number}</Tag>
-                : <Text type="secondary" style={{ fontSize: 11 }}>0</Text>,
-          },
-          {
-            title: t('pendingCount'),
-            dataIndex: 'pendingCount' as keyof IFTableSummary,
-            width: 72,
-            align: 'center' as const,
-            render: (v: unknown) =>
-              (v as number) > 0
-                ? <Tag color="orange" style={{ fontSize: 11 }}>{v as number}</Tag>
-                : <Text type="secondary" style={{ fontSize: 11 }}>0</Text>,
-          },
-        ]
-      : []),
-  ]
-
-  const currentUptime = (status?.uptimeSeconds ?? 0) + uptimeOffset
+  const displayStatus = statusError ? 'STOP' : (status?.status ?? 'STOP')
 
   return (
     <div style={{ padding: 24, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* ── 버튼 행 (최상단) ── */}
+      {/* ── 버튼 행 ── */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
         <Button icon={<ReloadOutlined />} onClick={handleRefresh}>{t('refresh')}</Button>
         <Button
@@ -131,20 +116,6 @@ export default function Dashboard() {
         >
           {autoRefresh ? t('autoOn') : t('autoOff')}
         </Button>
-        <Popconfirm
-          title={selectedSendTable ? t('confirmRetransmit') : t('noTableSelected')}
-          onConfirm={() => { if (selectedSendTable) retransmit.mutate({ tableNames: [selectedSendTable] }) }}
-          disabled={!selectedSendTable}
-        >
-          <Button
-            icon={<SendOutlined />}
-            danger
-            disabled={!selectedSendTable}
-            loading={retransmit.isPending}
-          >
-            {t('retransmit')}{selectedSendTable ? ` (${selectedSendTable})` : ''}
-          </Button>
-        </Popconfirm>
       </div>
 
       {/* ── 상태 카드 ── */}
@@ -152,8 +123,8 @@ export default function Dashboard() {
         {[
           {
             title: t('clientStatus'),
-            value: status?.status ?? '-',
-            valueStyle: { color: status?.status === 'RUNNING' ? '#52c41a' : '#ff4d4f', fontSize: 18 },
+            value: displayStatus,
+            valueStyle: { color: displayStatus === 'RUNNING' ? '#52c41a' : '#ff4d4f', fontSize: 18 },
             loading: statusLoading,
           },
           {
@@ -163,19 +134,13 @@ export default function Dashboard() {
             loading: statusLoading,
           },
           {
-            title: t('uptime'),
-            value: status ? formatUptime(currentUptime) : '--:--:--',
-            valueStyle: { fontSize: 16, fontVariantNumeric: 'tabular-nums' },
-            loading: statusLoading,
-          },
-          {
             title: t('totalErrors'),
             value: status?.totalErrorCount ?? 0,
             valueStyle: { color: (status?.totalErrorCount ?? 0) > 0 ? '#ff4d4f' : '#52c41a' },
             loading: statusLoading,
           },
         ].map((card, i) => (
-          <Col span={6} key={i}>
+          <Col span={8} key={i}>
             <Card
               size="small"
               style={{ height: 80 }}
@@ -189,78 +154,41 @@ export default function Dashboard() {
         ))}
       </Row>
 
-      {/* ── 좌우 그리드 ── */}
-      <Row gutter={16} style={{ flex: 1, minHeight: 0 }}>
-        {/* SEND */}
-        <Col span={12} style={{ height: '100%' }}>
-          <Card
-            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-            styles={{ body: { flex: 1, padding: '0 0 8px', overflow: 'hidden' } }}
-            title={
-              <Space>
-                <Text strong>{t('ifStatusSend')}</Text>
-                {lastQueried && (
-                  <Text type="secondary" style={{ fontSize: 11, fontWeight: 'normal' }}>
-                    {t('lastQueried')}: {dayjs(lastQueried).format('HH:mm:ss')}
-                  </Text>
-                )}
-              </Space>
-            }
-          >
-            <Table<IFTableSummary>
-              dataSource={sendSummary ?? []}
-              columns={summaryColumns('send')}
-              rowKey="tableName"
-              loading={sendLoading}
-              pagination={false}
-              size="small"
-              scroll={{ y: GRID_HEIGHT }}
-              rowClassName={(r) => (r.hasError ? 'row-error' : '')}
-              onRow={(r) => ({
-                onClick: () => setSelectedSendTable(r.tableName === selectedSendTable ? null : r.tableName),
-                onDoubleClick: () => navigate(`/send?table=${encodeURIComponent(r.tableName)}`),
-                style: {
-                  cursor: 'pointer',
-                  background: r.tableName === selectedSendTable ? '#e6f4ff' : undefined,
-                },
-              })}
-            />
-          </Card>
-        </Col>
-
-        {/* FETCH */}
-        <Col span={12} style={{ height: '100%' }}>
-          <Card
-            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-            styles={{ body: { flex: 1, padding: '0 0 8px', overflow: 'hidden' } }}
-            title={
-              <Space>
-                <Text strong>{t('ifStatusFetch')}</Text>
-                {lastQueried && (
-                  <Text type="secondary" style={{ fontSize: 11, fontWeight: 'normal' }}>
-                    {t('lastQueried')}: {dayjs(lastQueried).format('HH:mm:ss')}
-                  </Text>
-                )}
-              </Space>
-            }
-          >
-            <Table<IFTableSummary>
-              dataSource={fetchSummary ?? []}
-              columns={summaryColumns('fetch')}
-              rowKey="tableName"
-              loading={fetchLoading}
-              pagination={false}
-              size="small"
-              scroll={{ y: GRID_HEIGHT }}
-              rowClassName={(r) => (r.hasError ? 'row-error' : '')}
-              onRow={(r) => ({
-                onDoubleClick: () => navigate(`/fetch?table=${encodeURIComponent(r.tableName)}`),
-                style: { cursor: 'pointer' },
-              })}
-            />
-          </Card>
-        </Col>
-      </Row>
+      {/* ── b2b_mes_lot_his_if 현황 그리드 ── */}
+      <Card
+        style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+        styles={{ body: { flex: 1, padding: '0 0 8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' } }}
+        title={
+          <Space>
+            <Text strong>b2b_mes_lot_his_if 현황</Text>
+            {lastQueried && (
+              <Text type="secondary" style={{ fontSize: 11, fontWeight: 'normal' }}>
+                {t('lastQueried')}: {dayjs(lastQueried).format('HH:mm:ss')}
+              </Text>
+            )}
+          </Space>
+        }
+        extra={
+          <RangePicker
+            showTime
+            size="small"
+            value={dateRange}
+            onChange={(v) => { if (v?.[0] && v?.[1]) setDateRange([v[0], v[1]]) }}
+            format="MM-DD HH:mm"
+          />
+        }
+      >
+        <Table<LotHisIfRow>
+          dataSource={lotData ?? []}
+          columns={lotHisIfColumns}
+          rowKey="id"
+          loading={lotLoading}
+          pagination={{ pageSize: 50, showSizeChanger: true, showTotal: (t) => `총 ${t}건` }}
+          size="small"
+          scroll={{ y: 'calc(100vh - 360px)' }}
+          rowClassName={(r) => (r.status === 'ERROR' ? 'row-error' : '')}
+        />
+      </Card>
     </div>
   )
 }

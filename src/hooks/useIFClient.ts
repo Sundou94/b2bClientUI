@@ -63,6 +63,15 @@ export const useFetchData = (
     placeholderData: (prev) => prev,
   })
 
+export const useLotHisIf = (from: string, to: string, autoRefresh: boolean, intervalMs = 5000) =>
+  useQuery({
+    queryKey: ['lot-his-if', from, to],
+    queryFn: () => ifClientApi.getLotHisIf(from, to),
+    enabled: !!from && !!to,
+    refetchInterval: autoRefresh ? intervalMs : false,
+    placeholderData: (prev) => prev,
+  })
+
 export const useRetransmit = () => {
   const queryClient = useQueryClient()
 

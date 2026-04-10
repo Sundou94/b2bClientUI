@@ -5,6 +5,7 @@ import type {
   IFTableSummary,
   SendRow,
   FetchRow,
+  LotHisIfRow,
   RetransmitRequest,
   RetransmitResult,
 } from '../types'
@@ -28,6 +29,12 @@ export const ifClientApi = {
 
   retransmit: (req: RetransmitRequest) =>
     apiClient.post<RetransmitResult>('/send/retransmit', req).then((r) => r.data),
+
+  // ── LOT HIS IF ───────────────────────────────
+  getLotHisIf: (from: string, to: string) =>
+    apiClient
+      .get<LotHisIfRow[]>('/lot-his-if/list', { params: { from, to } })
+      .then((r) => r.data),
 
   // ── FETCH ─────────────────────────────────────
   getFetchSummary: () =>

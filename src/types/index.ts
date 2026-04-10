@@ -39,6 +39,15 @@ export interface FetchRow {
   data: Record<string, unknown>
 }
 
+export interface LotHisIfRow {
+  id: string
+  lotId: string
+  status: 'SUCCESS' | 'ERROR' | 'PENDING'
+  errorMessage: string | null
+  processedAt: string | null
+  createdAt: string
+}
+
 export interface RetransmitRequest {
   tableNames?: string[]
   ids?: string[]
