@@ -35,11 +35,15 @@ function CardSpin({ loading, children }: { loading: boolean; children: React.Rea
   )
 }
 
+const hCenter = { onHeaderCell: () => ({ style: { textAlign: 'center' as const } }) }
+
 const lotHisIfColumns: ColumnsType<LotHisIfRow> = [
   {
     title: 'LOT ID',
     dataIndex: 'lotId',
     width: 160,
+    align: 'left',
+    ...hCenter,
     render: (v) => <Text strong style={{ fontSize: 12 }}>{v}</Text>,
     ellipsis: true,
   },
@@ -48,6 +52,7 @@ const lotHisIfColumns: ColumnsType<LotHisIfRow> = [
     dataIndex: 'status',
     width: 90,
     align: 'center',
+    ...hCenter,
     render: (v: LotHisIfRow['status']) => {
       const colorMap = { SUCCESS: 'green', ERROR: 'red', PENDING: 'orange' } as const
       return <Tag color={colorMap[v]} style={{ fontSize: 11 }}>{v}</Tag>
@@ -57,6 +62,8 @@ const lotHisIfColumns: ColumnsType<LotHisIfRow> = [
     title: '처리일시',
     dataIndex: 'processedAt',
     width: 140,
+    align: 'center',
+    ...hCenter,
     render: (v) => (
       <Text style={{ fontSize: 11 }}>{v ? dayjs(v).format('MM-DD HH:mm:ss') : '-'}</Text>
     ),
@@ -65,6 +72,8 @@ const lotHisIfColumns: ColumnsType<LotHisIfRow> = [
     title: '등록일시',
     dataIndex: 'createdAt',
     width: 140,
+    align: 'center',
+    ...hCenter,
     render: (v) => (
       <Text style={{ fontSize: 11 }}>{v ? dayjs(v).format('MM-DD HH:mm:ss') : '-'}</Text>
     ),
@@ -72,6 +81,8 @@ const lotHisIfColumns: ColumnsType<LotHisIfRow> = [
   {
     title: '오류메시지',
     dataIndex: 'errorMessage',
+    align: 'left',
+    ...hCenter,
     render: (v) => (
       <Text type="danger" style={{ fontSize: 11 }}>{v ?? '-'}</Text>
     ),
