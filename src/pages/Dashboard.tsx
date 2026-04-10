@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react'
 import {
   Card, Col, Row, Statistic, Table, Button,
-  Space, Tag, Typography, Spin, DatePicker, Popconfirm,
+  Space, Tag, Typography, Spin, Popconfirm,
 } from 'antd'
 import { ReloadOutlined, SendOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import dayjs, { type Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import { useClientStatus, useLotHisIf, useRetransmit } from '../hooks/useIFClient'
 import { useAppContext } from '../context/AppContext'
 import type { LotHisIfRow } from '../types'
 
 const { Text } = Typography
-const { RangePicker } = DatePicker
 
 const hCenter = { onHeaderCell: () => ({ style: { textAlign: 'center' as const } }) }
 
@@ -73,14 +72,10 @@ export default function Dashboard() {
   const { t } = useAppContext()
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [lastQueried, setLastQueried] = useState<Date | null>(null)
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().startOf('day'), dayjs().endOf('day')])
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
 
-  const from = dateRange[0].toISOString()
-  const to = dateRange[1].toISOString()
-
   const { data: status, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useClientStatus(autoRefresh)
-  const { data: lotData, isLoading: lotLoading, refetch: refetchLot } = useLotHisIf(from, to, autoRefresh)
+  const { data: lotData, isLoading: lotLoading, refetch: refetchLot } = useLotHisIf(autoRefresh)
   const retransmit = useRetransmit()
 
   useEffect(() => {
@@ -160,15 +155,7 @@ export default function Dashboard() {
             )}
           </Space>
         }
-        extra={
-          <RangePicker
-            showTime
-            size="small"
-            value={dateRange}
-            onChange={(v) => { if (v?.[0] && v?.[1]) setDateRange([v[0], v[1]]) }}
-            format="MM-DD HH:mm"
-          />
-        }
+
       >
         <Table<LotHisIfRow>
           dataSource={lotData ?? []}

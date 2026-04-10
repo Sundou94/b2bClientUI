@@ -12,11 +12,10 @@ export const useClientStatus = (autoRefresh: boolean, intervalMs = 5000) =>
     placeholderData: (prev) => prev,
   })
 
-export const useLotHisIf = (from: string, to: string, autoRefresh: boolean, intervalMs = 5000) =>
+export const useLotHisIf = (autoRefresh: boolean, intervalMs = 5000) =>
   useQuery({
-    queryKey: ['lot-his-if', from, to],
-    queryFn: () => ifClientApi.getLotHisIf(from, to),
-    enabled: !!from && !!to,
+    queryKey: ['lot-his-if'],
+    queryFn: ifClientApi.getLotHisIf,
     refetchInterval: autoRefresh ? intervalMs : false,
     placeholderData: (prev) => prev,
   })
