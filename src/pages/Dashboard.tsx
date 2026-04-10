@@ -180,7 +180,6 @@ export default function Dashboard() {
               if (node.isSelected() && node.data?.status !== 'ERROR') node.setSelected(false)
             })
           }}
-          rowClassRules={{ 'row-error': (p) => p.data?.status === 'ERROR' }}
           pagination
           paginationPageSize={50}
           paginationPageSizeSelector={[25, 50, 100]}
