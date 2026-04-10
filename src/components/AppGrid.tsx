@@ -1,11 +1,11 @@
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
+import type { GetContextMenuItems } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import type { AgGridReactProps } from 'ag-grid-react'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-quartz.css'
 import { useAppContext } from '../context/AppContext'
 
-// 앱 전체에서 한 번만 등록
 ModuleRegistry.registerModules([AllCommunityModule])
 
 const defaultColDef = {
@@ -14,6 +14,13 @@ const defaultColDef = {
   minWidth: 60,
   headerClass: 'center-header',
 }
+
+const getContextMenuItems: GetContextMenuItems = () => [
+  'copy',
+  'copyWithHeaders',
+  'separator',
+  'csvExport',
+]
 
 type Props<T extends object> = AgGridReactProps<T> & {
   height?: string | number
@@ -28,8 +35,9 @@ export default function AppGrid<T extends object>({ height = '100%', ...props }:
     >
       <AgGridReact<T>
         defaultColDef={defaultColDef}
-        suppressMenuHide           // 컬럼 헤더 메뉴 버튼 항상 표시
-        enableCellTextSelection    // 셀 텍스트 드래그 선택 허용
+        suppressMenuHide
+        enableCellTextSelection
+        getContextMenuItems={getContextMenuItems}
         {...props}
       />
     </div>

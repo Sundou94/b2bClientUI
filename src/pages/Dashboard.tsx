@@ -152,11 +152,10 @@ export default function Dashboard() {
           columnDefs={colDefs}
           loading={lotLoading}
           onGridReady={(e) => setGridApi(e.api)}
-          // ERROR 상태 row만 선택 가능하도록 제한
           rowSelection={{
             mode: 'multiRow',
-            checkboxes: (p) => p.data?.status === 'ERROR',
-            isRowSelectable: (p) => p.data?.status === 'ERROR',
+            checkboxes: true,            // 모든 row에 체크박스 표시
+            isRowSelectable: (p) => p.data?.status === 'ERROR',  // ERROR만 선택 가능
             enableClickSelection: false,
           }}
           getRowId={(p) => p.data.id}
