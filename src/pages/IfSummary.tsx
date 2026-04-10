@@ -13,9 +13,7 @@ const colDefs: ColDef<SseSummaryRow>[] = [
     headerName: 'Table',
     field: 'tableName',
     flex: 1,
-    cellRenderer: ({ value }: { value: string }) => (
-      <strong style={{ fontSize: 12 }}>{value}</strong>
-    ),
+    cellRenderer: ({ value }: { value: string }) => <strong>{value}</strong>,
   },
   {
     headerName: '최종 Job 시간',
@@ -27,8 +25,8 @@ const colDefs: ColDef<SseSummaryRow>[] = [
   {
     headerName: '성공 건수',
     field: 'successCount',
-    width: 100,
-    cellStyle: { textAlign: 'right', color: '#52c41a', fontWeight: 600 },
+    width: 110,
+    cellStyle: { textAlign: 'right', color: 'var(--color-success)', fontWeight: 600 },
     valueFormatter: ({ value }) => (value as number).toLocaleString(),
   },
 ]
@@ -41,7 +39,7 @@ export default function IfSummary() {
     <Badge
       status={connected ? 'processing' : 'error'}
       text={
-        <Text type="secondary" style={{ fontSize: 11 }}>
+        <Text type="secondary" className="grid-card-subtitle">
           {connected ? 'SSE 연결됨' : 'SSE 끊김'}
         </Text>
       }
@@ -50,25 +48,21 @@ export default function IfSummary() {
 
   const gridCard = (title: string, rows: SseSummaryRow[]) => (
     <Card
-      style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-      styles={{ body: { flex: 1, padding: '8px 0 0', overflow: 'hidden' } }}
+      className="grid-card"
       title={
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span className="grid-card-title">
           <Text strong>{title}</Text>
           {sseStatus}
         </span>
       }
     >
-      <AppGrid<SseSummaryRow>
-        rowData={rows}
-        columnDefs={colDefs}
-      />
+      <AppGrid<SseSummaryRow> rowData={rows} columnDefs={colDefs} />
     </Card>
   )
 
   return (
-    <div style={{ padding: 24, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <Row gutter={16} style={{ flex: 1, minHeight: 0 }}>
+    <div className="page">
+      <Row gutter={[16, 0]} style={{ flex: 1, minHeight: 0 }}>
         <Col span={12} style={{ height: '100%' }}>
           {gridCard(t('ifStatusSend'), sendRows)}
         </Col>

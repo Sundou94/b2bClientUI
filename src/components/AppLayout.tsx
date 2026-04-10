@@ -22,6 +22,8 @@ export default function AppLayout() {
     { key: '/if-summary', icon: <SyncOutlined />, label: t('ifSummary') },
   ]
 
+  const btnClass = `sider-footer-btn ${collapsed ? 'collapsed' : 'expanded'}`
+
   return (
     <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <Sider
@@ -34,20 +36,7 @@ export default function AppLayout() {
         style={{ position: 'fixed', height: '100vh', left: 0, top: 0, zIndex: 100 }}
       >
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div
-            style={{
-              padding: collapsed ? '16px 0' : '16px',
-              textAlign: collapsed ? 'center' : 'left',
-              borderBottom: '1px solid rgba(255,255,255,0.1)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              transition: 'padding 0.2s ease',
-              color: '#fff',
-              fontWeight: 600,
-              fontSize: 13,
-              flexShrink: 0,
-            }}
-          >
+          <div className={`sider-header${collapsed ? ' collapsed' : ''}`}>
             {collapsed ? '📡' : t('ifClientMonitor')}
           </div>
 
@@ -63,13 +52,13 @@ export default function AppLayout() {
             />
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '8px 0', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
+          <div className="sider-footer">
             <Tooltip title={isDark ? t('lightMode') : t('darkMode')} placement="right">
               <Button
                 type="text"
                 icon={isDark ? <SunOutlined /> : <MoonOutlined />}
                 onClick={() => setIsDark(!isDark)}
-                style={{ color: '#fff', width: '100%', justifyContent: 'flex-start', paddingLeft: collapsed ? 20 : 16, display: 'flex', alignItems: 'center', gap: 10, borderRadius: 0 }}
+                className={btnClass}
               >
                 {!collapsed && (isDark ? t('lightMode') : t('darkMode'))}
               </Button>
@@ -79,7 +68,7 @@ export default function AppLayout() {
               <Button
                 type="text"
                 onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
-                style={{ color: '#fff', width: '100%', fontWeight: 600, fontSize: 13, justifyContent: 'flex-start', paddingLeft: collapsed ? 20 : 16, display: 'flex', alignItems: 'center', gap: 10, borderRadius: 0 }}
+                className={btnClass}
               >
                 {collapsed ? (lang === 'ko' ? '한' : 'EN') : (lang === 'ko' ? '🌐 English' : '🌐 한국어')}
               </Button>

@@ -1,22 +1,157 @@
-html,
-body,
-#root {
+/* ─── 디자인 토큰 ─────────────────────────────────────── */
+:root {
+  --color-success:      #52c41a;
+  --color-error:        #ff4d4f;
+  --color-warning:      #fa8c16;
+  --color-text-muted:   rgba(0, 0, 0, 0.45);
+
+  --font-sm:   11px;
+  --font-md:   13px;
+  --font-lg:   16px;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+
+  --card-radius: 8px;
+}
+
+/* ─── 기본 레이아웃 ──────────────────────────────────── */
+html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  font-size: var(--font-md);
 }
 
+/* ─── 사이드바 ───────────────────────────────────────── */
 .ant-layout-sider {
   transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease !important;
 }
 
-/* AG Grid: 컬럼 헤더 중앙 정렬 */
+.sider-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+  overflow: hidden;
+  transition: padding 0.2s ease;
+  color: #fff;
+  font-weight: 600;
+  font-size: var(--font-md);
+  flex-shrink: 0;
+}
+.sider-header.collapsed {
+  padding: var(--spacing-md) 0;
+  text-align: center;
+}
+
+.sider-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-sm) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sider-footer-btn {
+  color: #fff !important;
+  width: 100% !important;
+  justify-content: flex-start !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border-radius: 0 !important;
+  font-size: var(--font-md) !important;
+}
+.sider-footer-btn.collapsed {
+  padding-left: 20px !important;
+}
+.sider-footer-btn.expanded {
+  padding-left: var(--spacing-lg) !important;
+}
+
+/* ─── 페이지 공통 레이아웃 ───────────────────────────── */
+.page {
+  padding: var(--spacing-xl);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.page-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+/* ─── 상태 카드 ──────────────────────────────────────── */
+.status-card-row {
+  flex-shrink: 0;
+}
+
+.status-card {
+  height: 80px;
+}
+
+.status-card .ant-card-body {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+}
+
+/* ─── 그리드 카드 ────────────────────────────────────── */
+.grid-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-card .ant-card-body {
+  flex: 1;
+  padding: var(--spacing-sm) 0 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.grid-card-subtitle {
+  font-size: var(--font-sm);
+  font-weight: normal;
+}
+
+/* ─── AG Grid 공통 ───────────────────────────────────── */
 .center-header .ag-header-cell-label {
   justify-content: center;
 }
 
-/* AG Grid: ERROR 행 배경 강조 */
+.ag-theme-quartz,
+.ag-theme-quartz-dark {
+  font-size: var(--font-md) !important;
+}
+
+.ag-theme-quartz .ag-cell,
+.ag-theme-quartz-dark .ag-cell {
+  font-size: var(--font-sm);
+  line-height: 1.4;
+}
+
+/* ERROR 행 강조 */
 .ag-theme-quartz .ag-row.row-error {
   background-color: #fff2f0 !important;
 }

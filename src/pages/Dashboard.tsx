@@ -26,9 +26,7 @@ const colDefs: ColDef<LotHisIfRow>[] = [
     headerName: 'LOT ID',
     field: 'lotId',
     flex: 1,
-    cellRenderer: ({ value }: { value: string }) => (
-      <strong style={{ fontSize: 12 }}>{value}</strong>
-    ),
+    cellRenderer: ({ value }: { value: string }) => <strong>{value}</strong>,
   },
   {
     headerName: '상태',
@@ -37,7 +35,7 @@ const colDefs: ColDef<LotHisIfRow>[] = [
     cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
     cellRenderer: ({ value }: { value: LotHisIfRow['status'] }) => {
       const colorMap = { SUCCESS: 'green', ERROR: 'red', PENDING: 'orange' } as const
-      return <Tag color={colorMap[value]} style={{ fontSize: 11, margin: 0 }}>{value}</Tag>
+      return <Tag color={colorMap[value]} style={{ margin: 0 }}>{value}</Tag>
     },
   },
   {
@@ -58,7 +56,7 @@ const colDefs: ColDef<LotHisIfRow>[] = [
     headerName: '오류메시지',
     field: 'errorMessage',
     flex: 2,
-    cellStyle: { color: '#ff4d4f', fontSize: 11 },
+    cellStyle: { color: 'var(--color-error)' },
     valueFormatter: ({ value }) => value ?? '-',
   },
 ]
@@ -85,23 +83,23 @@ export default function Dashboard() {
     {
       title: t('clientStatus'),
       value: displayStatus,
-      valueStyle: { color: displayStatus === 'RUNNING' ? '#52c41a' : '#ff4d4f', fontSize: 18 },
+      valueStyle: { color: displayStatus === 'RUNNING' ? 'var(--color-success)' : 'var(--color-error)', fontSize: 'var(--font-lg)' },
     },
     {
       title: t('startTime'),
       value: status ? dayjs(status.startTime).format('MM-DD HH:mm:ss') : '-',
-      valueStyle: { fontSize: 16 },
+      valueStyle: { fontSize: 'var(--font-lg)' },
     },
     {
       title: t('totalErrors'),
       value: status?.totalErrorCount ?? 0,
-      valueStyle: { color: (status?.totalErrorCount ?? 0) > 0 ? '#ff4d4f' : '#52c41a' },
+      valueStyle: { color: (status?.totalErrorCount ?? 0) > 0 ? 'var(--color-error)' : 'var(--color-success)' },
     },
   ]
 
   return (
-    <div style={{ padding: 24, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
+    <div className="page">
+      <div className="page-toolbar">
         <Button icon={<ReloadOutlined />} onClick={() => { refetchStatus(); refetchLot(); setLastQueried(new Date()) }}>
           {t('refresh')}
         </Button>
@@ -121,10 +119,10 @@ export default function Dashboard() {
         </Popconfirm>
       </div>
 
-      <Row gutter={12} style={{ flexShrink: 0 }}>
+      <Row gutter={[16, 0]} className="status-card-row">
         {statusCards.map((card, i) => (
           <Col span={8} key={i}>
-            <Card size="small" style={{ height: 80 }} styles={{ body: { height: '100%', display: 'flex', alignItems: 'center' } }}>
+            <Card size="small" className="status-card">
               <CardSpin loading={statusLoading}>
                 <Statistic title={card.title} value={card.value} valueStyle={card.valueStyle} />
               </CardSpin>
@@ -134,13 +132,12 @@ export default function Dashboard() {
       </Row>
 
       <Card
-        style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
-        styles={{ body: { flex: 1, padding: '8px 0 0', overflow: 'hidden' } }}
+        className="grid-card"
         title={
-          <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span className="grid-card-title">
             <Text strong>b2b_mes_lot_his_if 현황</Text>
             {lastQueried && (
-              <Text type="secondary" style={{ fontSize: 11, fontWeight: 'normal' }}>
+              <Text type="secondary" className="grid-card-subtitle">
                 {t('lastQueried')}: {dayjs(lastQueried).format('HH:mm:ss')}
               </Text>
             )}
@@ -154,8 +151,8 @@ export default function Dashboard() {
           onGridReady={(e) => setGridApi(e.api)}
           rowSelection={{
             mode: 'multiRow',
-            checkboxes: true,            // 모든 row에 체크박스 표시
-            isRowSelectable: (p) => p.data?.status === 'ERROR',  // ERROR만 선택 가능
+            checkboxes: true,
+            isRowSelectable: (p) => p.data?.status === 'ERROR',
             enableClickSelection: false,
           }}
           getRowId={(p) => p.data.id}
