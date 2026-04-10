@@ -56,21 +56,21 @@ export default function AppLayout() {
             <Tooltip title={isDark ? t('lightMode') : t('darkMode')} placement="right">
               <Button
                 type="text"
-                icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+                icon={isDark ? <MoonOutlined /> : <SunOutlined />}
                 onClick={() => setIsDark(!isDark)}
                 className={btnClass}
               >
-                {!collapsed && (isDark ? t('lightMode') : t('darkMode'))}
+                {!collapsed && (isDark ? t('darkMode') : t('lightMode'))}
               </Button>
             </Tooltip>
 
-            <Tooltip title={lang === 'ko' ? 'English' : '한국어'} placement="right">
+            <Tooltip title={lang === 'ko' ? '한국어' : 'English'} placement="right">
               <Button
                 type="text"
                 onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
                 className={btnClass}
               >
-                {collapsed ? (lang === 'ko' ? '한' : 'EN') : (lang === 'ko' ? '🌐 English' : '🌐 한국어')}
+                {collapsed ? (lang === 'ko' ? '한' : 'EN') : (lang === 'ko' ? '한국어' : 'English')}
               </Button>
             </Tooltip>
           </div>
