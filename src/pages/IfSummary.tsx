@@ -1,42 +1,35 @@
-import { Card, Col, Row, Table, Typography, Badge } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import { Card, Col, Row, Typography, Badge } from 'antd'
+import type { ColDef } from 'ag-grid-community'
 import dayjs from 'dayjs'
 import { useJobEventSSE } from '../hooks/useIFClient'
 import { useAppContext } from '../context/AppContext'
+import AppGrid from '../components/AppGrid'
 import type { SseSummaryRow } from '../types'
 
 const { Text } = Typography
 
-const hCenter = { onHeaderCell: () => ({ style: { textAlign: 'center' as const } }) }
-
-const buildColumns = (): ColumnsType<SseSummaryRow> => [
+const colDefs: ColDef<SseSummaryRow>[] = [
   {
-    title: 'Table',
-    dataIndex: 'tableName',
-    align: 'left',
-    ...hCenter,
-    render: (v) => <Text strong style={{ fontSize: 12 }}>{v}</Text>,
-    ellipsis: true,
-  },
-  {
-    title: '최종 Job 시간',
-    dataIndex: 'lastJobTime',
-    width: 140,
-    align: 'center',
-    ...hCenter,
-    render: (v) => (
-      <Text style={{ fontSize: 11 }}>{v ? dayjs(v).format('MM-DD HH:mm:ss') : '-'}</Text>
+    headerName: 'Table',
+    field: 'tableName',
+    flex: 1,
+    cellRenderer: ({ value }: { value: string }) => (
+      <strong style={{ fontSize: 12 }}>{value}</strong>
     ),
   },
   {
-    title: '성공 건수',
-    dataIndex: 'successCount',
-    width: 90,
-    align: 'right',
-    ...hCenter,
-    render: (v: number) => (
-      <Text strong style={{ fontSize: 12, color: '#52c41a' }}>{v.toLocaleString()}</Text>
-    ),
+    headerName: '최종 Job 시간',
+    field: 'lastJobTime',
+    width: 150,
+    cellStyle: { textAlign: 'center' },
+    valueFormatter: ({ value }) => value ? dayjs(value).format('MM-DD HH:mm:ss') : '-',
+  },
+  {
+    headerName: '성공 건수',
+    field: 'successCount',
+    width: 100,
+    cellStyle: { textAlign: 'right', color: '#52c41a', fontWeight: 600 },
+    valueFormatter: ({ value }) => (value as number).toLocaleString(),
   },
 ]
 
@@ -44,33 +37,31 @@ export default function IfSummary() {
   const { t } = useAppContext()
   const { sendRows, fetchRows, connected } = useJobEventSSE()
 
-  const columns = buildColumns()
+  const sseStatus = (
+    <Badge
+      status={connected ? 'processing' : 'error'}
+      text={
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          {connected ? 'SSE 연결됨' : 'SSE 끊김'}
+        </Text>
+      }
+    />
+  )
 
   const gridCard = (title: string, rows: SseSummaryRow[]) => (
     <Card
       style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-      styles={{ body: { flex: 1, padding: '0 0 8px', overflow: 'hidden' } }}
+      styles={{ body: { flex: 1, padding: '8px 0 0', overflow: 'hidden' } }}
       title={
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Text strong>{title}</Text>
-          <Badge
-            status={connected ? 'processing' : 'error'}
-            text={
-              <Text type="secondary" style={{ fontSize: 11 }}>
-                {connected ? 'SSE 연결됨' : 'SSE 끊김'}
-              </Text>
-            }
-          />
+          {sseStatus}
         </span>
       }
     >
-      <Table<SseSummaryRow>
-        dataSource={rows}
-        columns={columns}
-        rowKey="tableName"
-        pagination={false}
-        size="small"
-        scroll={{ y: 'calc(100vh - 180px)' }}
+      <AppGrid<SseSummaryRow>
+        rowData={rows}
+        columnDefs={colDefs}
       />
     </Card>
   )

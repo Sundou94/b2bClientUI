@@ -7,23 +7,25 @@ body,
   overflow: hidden;
 }
 
-/* 사이드바 hover 트랜지션 */
 .ant-layout-sider {
   transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease !important;
 }
 
-/* 에러 행 강조 */
-.row-error td {
-  background: #fff2f0 !important;
-}
-.row-error:hover td {
-  background: #ffe7e6 !important;
+/* AG Grid: 컬럼 헤더 중앙 정렬 */
+.center-header .ag-header-cell-label {
+  justify-content: center;
 }
 
-/* 다크모드 에러 행 */
-[data-theme='dark'] .row-error td {
-  background: rgba(255, 77, 79, 0.15) !important;
+/* AG Grid: ERROR 행 배경 강조 */
+.ag-theme-quartz .ag-row.row-error {
+  background-color: #fff2f0 !important;
 }
-[data-theme='dark'] .row-error:hover td {
-  background: rgba(255, 77, 79, 0.25) !important;
+.ag-theme-quartz .ag-row.row-error:hover {
+  background-color: #ffe7e6 !important;
+}
+.ag-theme-quartz-dark .ag-row.row-error {
+  background-color: rgba(255, 77, 79, 0.15) !important;
+}
+.ag-theme-quartz-dark .ag-row.row-error:hover {
+  background-color: rgba(255, 77, 79, 0.25) !important;
 }

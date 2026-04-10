@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react'
 import {
-  Card, Col, Row, Statistic, Table, Button,
-  Space, Tag, Typography, Spin, Popconfirm,
+  Card, Col, Row, Statistic, Button,
+  Tag, Typography, Spin, Popconfirm,
 } from 'antd'
 import { ReloadOutlined, SendOutlined } from '@ant-design/icons'
-import type { ColumnsType } from 'antd/es/table'
+import type { ColDef, GridApi, SelectionChangedEvent } from 'ag-grid-community'
 import dayjs from 'dayjs'
 import { useClientStatus, useLotHisIf, useRetransmit } from '../hooks/useIFClient'
 import { useAppContext } from '../context/AppContext'
+import AppGrid from '../components/AppGrid'
 import type { LotHisIfRow } from '../types'
 
 const { Text } = Typography
-
-const hCenter = { onHeaderCell: () => ({ style: { textAlign: 'center' as const } }) }
 
 function CardSpin({ loading, children }: { loading: boolean; children: React.ReactNode }) {
   return (
@@ -22,57 +21,54 @@ function CardSpin({ loading, children }: { loading: boolean; children: React.Rea
   )
 }
 
-const lotHisIfColumns: ColumnsType<LotHisIfRow> = [
+const colDefs: ColDef<LotHisIfRow>[] = [
   {
-    title: 'LOT ID',
-    dataIndex: 'lotId',
-    align: 'left',
-    ...hCenter,
-    render: (v) => <Text strong style={{ fontSize: 12 }}>{v}</Text>,
-    ellipsis: true,
+    headerName: 'LOT ID',
+    field: 'lotId',
+    flex: 1,
+    cellRenderer: ({ value }: { value: string }) => (
+      <strong style={{ fontSize: 12 }}>{value}</strong>
+    ),
   },
   {
-    title: '상태',
-    dataIndex: 'status',
-    width: 90,
-    align: 'center',
-    ...hCenter,
-    render: (v: LotHisIfRow['status']) => {
+    headerName: '상태',
+    field: 'status',
+    width: 100,
+    cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    cellRenderer: ({ value }: { value: LotHisIfRow['status'] }) => {
       const colorMap = { SUCCESS: 'green', ERROR: 'red', PENDING: 'orange' } as const
-      return <Tag color={colorMap[v]} style={{ fontSize: 11 }}>{v}</Tag>
+      return <Tag color={colorMap[value]} style={{ fontSize: 11, margin: 0 }}>{value}</Tag>
     },
   },
   {
-    title: '처리일시',
-    dataIndex: 'processedAt',
-    width: 140,
-    align: 'center',
-    ...hCenter,
-    render: (v) => <Text style={{ fontSize: 11 }}>{v ? dayjs(v).format('MM-DD HH:mm:ss') : '-'}</Text>,
+    headerName: '처리일시',
+    field: 'processedAt',
+    width: 150,
+    cellStyle: { textAlign: 'center' },
+    valueFormatter: ({ value }) => value ? dayjs(value).format('MM-DD HH:mm:ss') : '-',
   },
   {
-    title: '등록일시',
-    dataIndex: 'createdAt',
-    width: 140,
-    align: 'center',
-    ...hCenter,
-    render: (v) => <Text style={{ fontSize: 11 }}>{v ? dayjs(v).format('MM-DD HH:mm:ss') : '-'}</Text>,
+    headerName: '등록일시',
+    field: 'createdAt',
+    width: 150,
+    cellStyle: { textAlign: 'center' },
+    valueFormatter: ({ value }) => value ? dayjs(value).format('MM-DD HH:mm:ss') : '-',
   },
   {
-    title: '오류메시지',
-    dataIndex: 'errorMessage',
-    align: 'left',
-    ...hCenter,
-    render: (v) => <Text type="danger" style={{ fontSize: 11 }}>{v ?? '-'}</Text>,
-    ellipsis: true,
+    headerName: '오류메시지',
+    field: 'errorMessage',
+    flex: 2,
+    cellStyle: { color: '#ff4d4f', fontSize: 11 },
+    valueFormatter: ({ value }) => value ?? '-',
   },
 ]
 
 export default function Dashboard() {
   const { t } = useAppContext()
+  const [gridApi, setGridApi] = useState<GridApi<LotHisIfRow> | null>(null)
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [lastQueried, setLastQueried] = useState<Date | null>(null)
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   const { data: status, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useClientStatus(autoRefresh)
   const { data: lotData, isLoading: lotLoading, refetch: refetchLot } = useLotHisIf(autoRefresh)
@@ -81,11 +77,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (!lotData) return
     setLastQueried(new Date())
-    // 갱신 후 ERROR 상태가 아닌 row는 선택 해제
-    setSelectedRowKeys((prev) => {
-      const errorIds = new Set(lotData.filter((r) => r.status === 'ERROR').map((r) => r.id))
-      return prev.filter((k) => errorIds.has(k as string))
-    })
   }, [lotData])
 
   const displayStatus = statusError ? 'STOP' : (status?.status ?? 'STOP')
@@ -118,14 +109,14 @@ export default function Dashboard() {
           {autoRefresh ? t('autoOn') : t('autoOff')}
         </Button>
         <Popconfirm
-          title={`선택한 ${selectedRowKeys.length}건을 재전송하시겠습니까?`}
-          onConfirm={() => retransmit.mutate({ ids: selectedRowKeys as string[] })}
-          disabled={selectedRowKeys.length === 0}
+          title={`선택한 ${selectedIds.length}건을 재전송하시겠습니까?`}
+          onConfirm={() => retransmit.mutate({ ids: selectedIds })}
+          disabled={selectedIds.length === 0}
           okText="확인"
           cancelText="취소"
         >
-          <Button icon={<SendOutlined />} danger disabled={selectedRowKeys.length === 0} loading={retransmit.isPending}>
-            {t('retransmit')}{selectedRowKeys.length > 0 ? ` (${selectedRowKeys.length})` : ''}
+          <Button icon={<SendOutlined />} danger disabled={selectedIds.length === 0} loading={retransmit.isPending}>
+            {t('retransmit')}{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
           </Button>
         </Popconfirm>
       </div>
@@ -144,33 +135,44 @@ export default function Dashboard() {
 
       <Card
         style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
-        styles={{ body: { flex: 1, padding: '0 0 8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' } }}
+        styles={{ body: { flex: 1, padding: '8px 0 0', overflow: 'hidden' } }}
         title={
-          <Space>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Text strong>b2b_mes_lot_his_if 현황</Text>
             {lastQueried && (
               <Text type="secondary" style={{ fontSize: 11, fontWeight: 'normal' }}>
                 {t('lastQueried')}: {dayjs(lastQueried).format('HH:mm:ss')}
               </Text>
             )}
-          </Space>
+          </span>
         }
-
       >
-        <Table<LotHisIfRow>
-          dataSource={lotData ?? []}
-          columns={lotHisIfColumns}
-          rowKey="id"
+        <AppGrid<LotHisIfRow>
+          rowData={lotData ?? []}
+          columnDefs={colDefs}
           loading={lotLoading}
-          pagination={{ pageSize: 50, showSizeChanger: true, showTotal: (total) => `총 ${total}건` }}
-          size="small"
-          scroll={{ y: 'calc(100vh - 360px)' }}
-          rowClassName={(r) => (r.status === 'ERROR' ? 'row-error' : '')}
+          onGridReady={(e) => setGridApi(e.api)}
+          // ERROR 상태 row만 선택 가능하도록 제한
           rowSelection={{
-            selectedRowKeys,
-            onChange: setSelectedRowKeys,
-            getCheckboxProps: (r) => ({ disabled: r.status !== 'ERROR' }),
+            mode: 'multiRow',
+            checkboxes: (p) => p.data?.status === 'ERROR',
+            isRowSelectable: (p) => p.data?.status === 'ERROR',
+            enableClickSelection: false,
           }}
+          getRowId={(p) => p.data.id}
+          onSelectionChanged={(e: SelectionChangedEvent<LotHisIfRow>) => {
+            setSelectedIds(e.api.getSelectedRows().map((r) => r.id))
+          }}
+          // 데이터 갱신 후 ERROR가 아닌 row는 선택 해제
+          onRowDataUpdated={() => {
+            gridApi?.forEachNode((node) => {
+              if (node.isSelected() && node.data?.status !== 'ERROR') node.setSelected(false)
+            })
+          }}
+          rowClassRules={{ 'row-error': (p) => p.data?.status === 'ERROR' }}
+          pagination
+          paginationPageSize={50}
+          paginationPageSizeSelector={[25, 50, 100]}
         />
       </Card>
     </div>
