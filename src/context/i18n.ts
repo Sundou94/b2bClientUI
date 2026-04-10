@@ -3,6 +3,7 @@ export type Lang = 'ko' | 'en'
 const dict: Record<string, Record<Lang, string>> = {
   // 공통
   dashboard: { ko: '대시보드', en: 'Dashboard' },
+  ifSummary: { ko: 'I/F 현황', en: 'I/F Summary' },
   send: { ko: 'SEND', en: 'SEND' },
   fetch: { ko: 'FETCH', en: 'FETCH' },
   refresh: { ko: '조회', en: 'Refresh' },

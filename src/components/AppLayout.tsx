@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Layout, Menu, Button, Tooltip } from 'antd'
 import {
   DashboardOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
+  SyncOutlined,
   MoonOutlined,
   SunOutlined,
 } from '@ant-design/icons'
@@ -22,13 +21,11 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(true)
 
   const selectedKey =
-    pathname.startsWith('/send') ? '/send' :
-    pathname.startsWith('/fetch') ? '/fetch' : '/'
+    pathname.startsWith('/if-summary') ? '/if-summary' : '/'
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: t('dashboard') },
-    { key: '/send', icon: <ArrowUpOutlined />, label: t('send') },
-    { key: '/fetch', icon: <ArrowDownOutlined />, label: t('fetch') },
+    { key: '/if-summary', icon: <SyncOutlined />, label: t('ifSummary') },
   ]
 
   return (

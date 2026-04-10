@@ -7,38 +7,6 @@ export interface ClientStatus {
   totalErrorCount: number
 }
 
-export interface IFTableItem {
-  fieldName: string
-  tableName: string
-  type: string
-  enabled: boolean
-}
-
-export interface IFTableSummary {
-  tableName: string
-  lastSyncTime: string | null
-  errorCount: number
-  pendingCount: number
-  hasError: boolean
-}
-
-export interface SendRow {
-  id: string
-  tableName: string
-  errorFlag: string
-  errorMessage: string | null
-  status: 'PENDING' | 'ERROR'
-  createdAt: string
-  data: Record<string, unknown>
-}
-
-export interface FetchRow {
-  id: string
-  tableName: string
-  receivedAt: string
-  data: Record<string, unknown>
-}
-
 export interface LotHisIfRow {
   id: string
   lotId: string
@@ -57,4 +25,19 @@ export interface RetransmitResult {
   successCount: number
   failCount: number
   message: string
+}
+
+// SSE — Job End 이벤트
+export interface JobEndEvent {
+  direction: 'SEND' | 'FETCH'
+  tableName: string
+  count: number
+  timestamp: string  // ISO 8601
+}
+
+// I/F Summary 그리드 row
+export interface SseSummaryRow {
+  tableName: string
+  lastJobTime: string
+  successCount: number
 }
